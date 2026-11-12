@@ -1,0 +1,291 @@
+====== Top 10 scorers across all matches ======
+[
+  {
+    goals: 88,
+    last_team: 'home',
+    player_id: Long('4814'),
+    player_name: 'Seyi Olawepo',
+    matches_scored_in: 63,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 87,
+    last_team: 'away',
+    player_id: Long('3011'),
+    player_name: 'Aisha Idris',
+    matches_scored_in: 65,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 86,
+    last_team: 'away',
+    player_id: Long('6004'),
+    player_name: 'Emeka Ezekwesili',
+    matches_scored_in: 68,
+    first_goal_minute: 3,
+    last_goal_minute: 89
+  },
+  {
+    goals: 85,
+    last_team: 'away',
+    player_id: Long('3010'),
+    player_name: 'Uche Oyetola',
+    matches_scored_in: 65,
+    first_goal_minute: 2,
+    last_goal_minute: 89
+  },
+  {
+    goals: 85,
+    last_team: 'home',
+    player_id: Long('2955'),
+    player_name: 'Joy Adesanya',
+    matches_scored_in: 65,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 83,
+    last_team: 'home',
+    player_id: Long('1122'),
+    player_name: 'Nnamdi Ogunleye',
+    matches_scored_in: 64,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 83,
+    last_team: 'home',
+    player_id: Long('3841'),
+    player_name: 'Bola Eze',
+    matches_scored_in: 63,
+    first_goal_minute: 7,
+    last_goal_minute: 87
+  },
+  {
+    goals: 83,
+    last_team: 'home',
+    player_id: Long('5545'),
+    player_name: 'Ifeanyi Olawale',
+    matches_scored_in: 62,
+    first_goal_minute: 1,
+    last_goal_minute: 88
+  },
+  {
+    goals: 82,
+    last_team: 'away',
+    player_id: Long('141'),
+    player_name: 'Zainab Okonkwo',
+    matches_scored_in: 65,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 82,
+    last_team: 'home',
+    player_id: Long('2686'),
+    player_name: 'Kemi Adesanya',
+    matches_scored_in: 63,
+    first_goal_minute: 2,
+    last_goal_minute: 88
+  }
+]
+
+====== Team win rates ======
+[
+  {
+    matches: 158,
+    wins: 84,
+    draws: 17,
+    losses: 57,
+    goals_for: 596,
+    goals_against: 495,
+    team_id: Long('384'),
+    team_name: 'Yaba Galaxy 384',
+    goal_difference: 101,
+    win_rate: 0.532
+  },
+  {
+    matches: 154,
+    wins: 79,
+    draws: 11,
+    losses: 64,
+    goals_for: 578,
+    goals_against: 534,
+    team_id: Long('590'),
+    team_name: 'Yaba Rovers 590',
+    goal_difference: 44,
+    win_rate: 0.513
+  },
+  {
+    matches: 152,
+    wins: 78,
+    draws: 15,
+    losses: 59,
+    goals_for: 553,
+    goals_against: 501,
+    team_id: Long('345'),
+    team_name: 'Agege Galaxy 345',
+    goal_difference: 52,
+    win_rate: 0.513
+  },
+  {
+    matches: 151,
+    wins: 78,
+    draws: 19,
+    losses: 54,
+    goals_for: 564,
+    goals_against: 517,
+    team_id: Long('327'),
+    team_name: 'Island Lions FC 327',
+    goal_difference: 47,
+    win_rate: 0.517
+  },
+  {
+    matches: 147,
+    wins: 77,
+    draws: 16,
+    losses: 54,
+    goals_for: 550,
+    goals_against: 477,
+    team_id: Long('181'),
+    team_name: 'Lekki Galaxy 181',
+    goal_difference: 73,
+    win_rate: 0.524
+  },
+  {
+    matches: 148,
+    wins: 76,
+    draws: 19,
+    losses: 53,
+    goals_for: 569,
+    goals_against: 483,
+    team_id: Long('427'),
+    team_name: 'Victoria United 427',
+    goal_difference: 86,
+    win_rate: 0.514
+  },
+  {
+    matches: 154,
+    wins: 76,
+    draws: 23,
+    losses: 55,
+    goals_for: 601,
+    goals_against: 547,
+    team_id: Long('517'),
+    team_name: 'Victoria Athletic 517',
+    goal_difference: 54,
+    win_rate: 0.494
+  },
+  {
+    matches: 156,
+    wins: 76,
+    draws: 21,
+    losses: 59,
+    goals_for: 596,
+    goals_against: 548,
+    team_id: Long('272'),
+    team_name: 'Island Galaxy 272',
+    goal_difference: 48,
+    win_rate: 0.487
+  },
+  {
+    matches: 152,
+    wins: 76,
+    draws: 6,
+    losses: 70,
+    goals_for: 576,
+    goals_against: 563,
+    team_id: Long('161'),
+    team_name: 'Island FC 161',
+    goal_difference: 13,
+    win_rate: 0.5
+  },
+  {
+    matches: 157,
+    wins: 75,
+    draws: 20,
+    losses: 62,
+    goals_for: 579,
+    goals_against: 528,
+    team_id: Long('295'),
+    team_name: 'Apapa Eagles 295',
+    goal_difference: 51,
+    win_rate: 0.478
+  }
+]
+
+====== Cards by team (top 10 by total cards) ======
+[
+  {
+    yellow: 104,
+    red: 25,
+    total: 129,
+    team_id: Long('257'),
+    team_name: 'Ikeja Strikers 257'
+  },
+  {
+    yellow: 110,
+    red: 18,
+    total: 128,
+    team_id: Long('85'),
+    team_name: 'Yaba Warriors 85'
+  },
+  {
+    yellow: 109,
+    red: 17,
+    total: 126,
+    team_id: Long('223'),
+    team_name: 'Island Athletic 223'
+  },
+  {
+    yellow: 108,
+    red: 17,
+    total: 125,
+    team_id: Long('200'),
+    team_name: 'Island Athletic 200'
+  },
+  {
+    yellow: 105,
+    red: 20,
+    total: 125,
+    team_id: Long('327'),
+    team_name: 'Island Lions FC 327'
+  },
+  {
+    yellow: 105,
+    red: 19,
+    total: 124,
+    team_id: Long('119'),
+    team_name: 'Lekki Rovers 119'
+  },
+  {
+    yellow: 105,
+    red: 19,
+    total: 124,
+    team_id: Long('517'),
+    team_name: 'Victoria Athletic 517'
+  },
+  {
+    yellow: 94,
+    red: 28,
+    total: 122,
+    team_id: Long('426'),
+    team_name: 'Festac Strikers 426'
+  },
+  {
+    yellow: 96,
+    red: 23,
+    total: 119,
+    team_id: Long('181'),
+    team_name: 'Lekki Galaxy 181'
+  },
+  {
+    yellow: 107,
+    red: 12,
+    total: 119,
+    team_id: Long('427'),
+    team_name: 'Victoria United 427'
+  }
+]

@@ -1,0 +1,972 @@
+============================================================
+  Portfolio 4 — NoSQL and Advanced Data Models
+  KickOff Arena · Ayodeji Shodipo · 2026/A/MIT/0725
+============================================================
+[1/4] Creating match_reports collection with $jsonSchema validator…
+==========================================================
+  match_reports collection created with $jsonSchema validator.
+  Indexes (excluding scorers.player_id — added in collscan_ixscan.js):
+[
+  {
+    v: 2,
+    key: {
+      _id: 1
+    },
+    name: '_id_'
+  },
+  {
+    v: 2,
+    key: {
+      match_id: 1
+    },
+    name: 'match_id_1',
+    unique: true
+  },
+  {
+    v: 2,
+    key: {
+      date: 1
+    },
+    name: 'date_1'
+  },
+  {
+    v: 2,
+    key: {
+      'home.team_id': 1,
+      date: -1
+    },
+    name: 'home.team_id_1_date_-1'
+  },
+  {
+    v: 2,
+    key: {
+      'away.team_id': 1,
+      date: -1
+    },
+    name: 'away.team_id_1_date_-1'
+  }
+]
+==========================================================
+Validator rejected the invalid document as expected:
+{
+  failingDocumentId: ObjectId('6af5c5ed9eff1eb190713a9d'),
+  details: {
+    operatorName: '$jsonSchema',
+    title: 'KickOff Arena match report',
+    schemaRulesNotSatisfied: [
+      {
+        operatorName: 'required',
+        specifiedAs: {
+          required: [
+            'match_id',
+            'date',
+            'pitch_id',
+            'home',
+            'away',
+            'status'
+          ]
+        },
+        missingProperties: [
+          'status'
+        ]
+      }
+    ]
+  }
+}
+Done. Final document count:
+1
+
+[2/4] Seeding 40 000+ documents (variable shape per match)…
+Generating 40000 match-report documents in 40 batches…
+  … batch 1/40 — total inserted = 1000
+  … batch 6/40 — total inserted = 6000
+  … batch 11/40 — total inserted = 11000
+  … batch 16/40 — total inserted = 16000
+  … batch 21/40 — total inserted = 21000
+  … batch 26/40 — total inserted = 26000
+  … batch 31/40 — total inserted = 31000
+  … batch 36/40 — total inserted = 36000
+==========================================================
+Done. match_reports.countDocuments() = 40000
+Three sample documents (to show the variable shape):
+{
+  match_id: Long('1'),
+  date: ISODate('2026-01-13T09:53:43.784Z'),
+  pitch_id: Long('7'),
+  location_area: 'Ikeja',
+  home: {
+    team_id: Long('3'),
+    name: 'Lekki Eagles 3',
+    score: 0
+  },
+  away: {
+    team_id: Long('244'),
+    name: 'Agege Rovers 244',
+    score: 7
+  },
+  status: 'completed',
+  created_at: ISODate('2026-11-12T13:58:06.005Z'),
+  scorers: [
+    {
+      player_id: Long('2442'),
+      player_name: 'Uche Ojo',
+      minute: 47,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2441'),
+        player_name: 'Danjuma Okoro'
+      }
+    },
+    {
+      player_id: Long('2447'),
+      player_name: 'Adaeze Oyetola',
+      minute: 57,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2441'),
+        player_name: 'Adaeze Oyetola'
+      }
+    },
+    {
+      player_id: Long('2440'),
+      player_name: 'Maryam Adesanya',
+      minute: 38,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2445'),
+        player_name: 'Uche Ojo'
+      }
+    },
+    {
+      player_id: Long('2445'),
+      player_name: 'Danjuma Okoro',
+      minute: 32,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('2443'),
+      player_name: 'Emeka Abubakar',
+      minute: 18,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2440'),
+        player_name: 'Adaeze Oyetola'
+      }
+    },
+    {
+      player_id: Long('2444'),
+      player_name: 'Zainab Eze',
+      minute: 44,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('2446'),
+      player_name: 'Yemi Adesanya',
+      minute: 62,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2443'),
+        player_name: 'Yemi Adesanya'
+      }
+    }
+  ],
+  cards: [
+    {
+      player_id: Long('2444'),
+      player_name: 'Zainab Eze',
+      minute: 1,
+      color: 'yellow',
+      team: 'away',
+      reason: 'simulation'
+    },
+    {
+      player_id: Long('2440'),
+      player_name: 'Maryam Adesanya',
+      minute: 14,
+      color: 'yellow',
+      team: 'away',
+      reason: 'simulation'
+    },
+    {
+      player_id: Long('2443'),
+      player_name: 'Emeka Abubakar',
+      minute: 35,
+      color: 'red',
+      team: 'away',
+      reason: 'dissent'
+    }
+  ]
+}
+{
+  match_id: Long('356'),
+  date: ISODate('2026-02-02T09:19:25.347Z'),
+  pitch_id: Long('5'),
+  location_area: 'Yaba',
+  home: {
+    team_id: Long('380'),
+    name: 'Surulere Strikers 380',
+    score: 0
+  },
+  away: {
+    team_id: Long('535'),
+    name: 'Apapa United 535',
+    score: 0
+  },
+  status: 'completed',
+  created_at: ISODate('2026-11-12T13:58:06.042Z'),
+  cards: [
+    {
+      player_id: Long('5355'),
+      player_name: 'Fatima Sanusi',
+      minute: 53,
+      color: 'yellow',
+      team: 'away',
+      reason: 'dissent'
+    },
+    {
+      player_id: Long('5352'),
+      player_name: 'Yemi Bello',
+      minute: 59,
+      color: 'yellow',
+      team: 'away',
+      reason: 'handball'
+    },
+    {
+      player_id: Long('3800'),
+      player_name: 'Chioma Okonkwo',
+      minute: 49,
+      color: 'yellow',
+      team: 'home',
+      reason: 'second bookable offence'
+    },
+    {
+      player_id: Long('3805'),
+      player_name: 'Nike Adeyemi',
+      minute: 82,
+      color: 'yellow',
+      team: 'home',
+      reason: 'second bookable offence'
+    }
+  ],
+  penalty_shootout: {
+    home_score: 5,
+    away_score: 4,
+    takers: [
+      {
+        player_id: Long('3801'),
+        player_name: 'Ifeanyi Mohammed',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5354'),
+        player_name: 'Fatima Sanusi',
+        team: 'away',
+        scored: true
+      },
+      {
+        player_id: Long('3806'),
+        player_name: 'Nike Adeyemi',
+        team: 'home',
+        scored: false
+      },
+      {
+        player_id: Long('5354'),
+        player_name: 'Yemi Bello',
+        team: 'away',
+        scored: false
+      },
+      {
+        player_id: Long('3804'),
+        player_name: 'Nike Idris',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5352'),
+        player_name: 'Maryam Okonkwo',
+        team: 'away',
+        scored: true
+      },
+      {
+        player_id: Long('3807'),
+        player_name: 'Ade Mohammed',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5351'),
+        player_name: 'Chidi Ehigiator',
+        team: 'away',
+        scored: true
+      },
+      {
+        player_id: Long('3802'),
+        player_name: 'Zainab Ibrahim',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5357'),
+        player_name: 'Ifeanyi Ehigiator',
+        team: 'away',
+        scored: false
+      }
+    ]
+  }
+}
+{
+  match_id: Long('19'),
+  date: ISODate('2026-12-24T15:18:41.182Z'),
+  pitch_id: Long('6'),
+  location_area: 'Yaba',
+  home: {
+    team_id: Long('357'),
+    name: 'Yaba Athletic 357',
+    score: 0
+  },
+  away: {
+    team_id: Long('154'),
+    name: 'Surulere Warriors 154',
+    score: 7
+  },
+  status: 'completed',
+  created_at: ISODate('2026-11-12T13:58:06.008Z'),
+  scorers: [
+    {
+      player_id: Long('1545'),
+      player_name: 'Uche Ehigiator',
+      minute: 67,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1540'),
+      player_name: 'Adaeze Abubakar',
+      minute: 81,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1543'),
+      player_name: 'Uche Ojo',
+      minute: 71,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('1540'),
+        player_name: 'Uche Ehigiator'
+      }
+    },
+    {
+      player_id: Long('1547'),
+      player_name: 'Adaeze Ezekwesili',
+      minute: 63,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('1546'),
+        player_name: 'Gbenga Abubakar'
+      }
+    },
+    {
+      player_id: Long('1547'),
+      player_name: 'Adaeze Ezekwesili',
+      minute: 79,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1545'),
+      player_name: 'Uche Ehigiator',
+      minute: 46,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1544'),
+      player_name: 'Emeka Ehigiator',
+      minute: 15,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('1546'),
+        player_name: 'Adaeze Olawepo'
+      }
+    }
+  ],
+  cards: [
+    {
+      player_id: Long('1541'),
+      player_name: 'Adaeze Olawepo',
+      minute: 33,
+      color: 'yellow',
+      team: 'away',
+      reason: 'serious foul play'
+    }
+  ],
+  var_reviews: [
+    {
+      minute: 55,
+      subject: 'goal: offside check',
+      decision: 'overturned'
+    }
+  ]
+}
+==========================================================
+
+[3/4] Aggregations — top scorers + team win rates + cards by team…
+====== Top 10 scorers across all matches ======
+[
+  {
+    goals: 88,
+    last_team: 'home',
+    player_id: Long('4814'),
+    player_name: 'Seyi Olawepo',
+    matches_scored_in: 63,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 87,
+    last_team: 'away',
+    player_id: Long('3011'),
+    player_name: 'Aisha Idris',
+    matches_scored_in: 65,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 86,
+    last_team: 'away',
+    player_id: Long('6004'),
+    player_name: 'Emeka Ezekwesili',
+    matches_scored_in: 68,
+    first_goal_minute: 3,
+    last_goal_minute: 89
+  },
+  {
+    goals: 85,
+    last_team: 'away',
+    player_id: Long('3010'),
+    player_name: 'Uche Oyetola',
+    matches_scored_in: 65,
+    first_goal_minute: 2,
+    last_goal_minute: 89
+  },
+  {
+    goals: 85,
+    last_team: 'home',
+    player_id: Long('2955'),
+    player_name: 'Joy Adesanya',
+    matches_scored_in: 65,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 83,
+    last_team: 'home',
+    player_id: Long('1122'),
+    player_name: 'Nnamdi Ogunleye',
+    matches_scored_in: 64,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 83,
+    last_team: 'home',
+    player_id: Long('3841'),
+    player_name: 'Bola Eze',
+    matches_scored_in: 63,
+    first_goal_minute: 7,
+    last_goal_minute: 87
+  },
+  {
+    goals: 83,
+    last_team: 'home',
+    player_id: Long('5545'),
+    player_name: 'Ifeanyi Olawale',
+    matches_scored_in: 62,
+    first_goal_minute: 1,
+    last_goal_minute: 88
+  },
+  {
+    goals: 82,
+    last_team: 'away',
+    player_id: Long('141'),
+    player_name: 'Zainab Okonkwo',
+    matches_scored_in: 65,
+    first_goal_minute: 1,
+    last_goal_minute: 89
+  },
+  {
+    goals: 82,
+    last_team: 'home',
+    player_id: Long('2686'),
+    player_name: 'Kemi Adesanya',
+    matches_scored_in: 63,
+    first_goal_minute: 2,
+    last_goal_minute: 88
+  }
+]
+
+====== Team win rates ======
+[
+  {
+    matches: 158,
+    wins: 84,
+    draws: 17,
+    losses: 57,
+    goals_for: 596,
+    goals_against: 495,
+    team_id: Long('384'),
+    team_name: 'Yaba Galaxy 384',
+    goal_difference: 101,
+    win_rate: 0.532
+  },
+  {
+    matches: 154,
+    wins: 79,
+    draws: 11,
+    losses: 64,
+    goals_for: 578,
+    goals_against: 534,
+    team_id: Long('590'),
+    team_name: 'Yaba Rovers 590',
+    goal_difference: 44,
+    win_rate: 0.513
+  },
+  {
+    matches: 152,
+    wins: 78,
+    draws: 15,
+    losses: 59,
+    goals_for: 553,
+    goals_against: 501,
+    team_id: Long('345'),
+    team_name: 'Agege Galaxy 345',
+    goal_difference: 52,
+    win_rate: 0.513
+  },
+  {
+    matches: 151,
+    wins: 78,
+    draws: 19,
+    losses: 54,
+    goals_for: 564,
+    goals_against: 517,
+    team_id: Long('327'),
+    team_name: 'Island Lions FC 327',
+    goal_difference: 47,
+    win_rate: 0.517
+  },
+  {
+    matches: 147,
+    wins: 77,
+    draws: 16,
+    losses: 54,
+    goals_for: 550,
+    goals_against: 477,
+    team_id: Long('181'),
+    team_name: 'Lekki Galaxy 181',
+    goal_difference: 73,
+    win_rate: 0.524
+  },
+  {
+    matches: 148,
+    wins: 76,
+    draws: 19,
+    losses: 53,
+    goals_for: 569,
+    goals_against: 483,
+    team_id: Long('427'),
+    team_name: 'Victoria United 427',
+    goal_difference: 86,
+    win_rate: 0.514
+  },
+  {
+    matches: 154,
+    wins: 76,
+    draws: 23,
+    losses: 55,
+    goals_for: 601,
+    goals_against: 547,
+    team_id: Long('517'),
+    team_name: 'Victoria Athletic 517',
+    goal_difference: 54,
+    win_rate: 0.494
+  },
+  {
+    matches: 156,
+    wins: 76,
+    draws: 21,
+    losses: 59,
+    goals_for: 596,
+    goals_against: 548,
+    team_id: Long('272'),
+    team_name: 'Island Galaxy 272',
+    goal_difference: 48,
+    win_rate: 0.487
+  },
+  {
+    matches: 152,
+    wins: 76,
+    draws: 6,
+    losses: 70,
+    goals_for: 576,
+    goals_against: 563,
+    team_id: Long('161'),
+    team_name: 'Island FC 161',
+    goal_difference: 13,
+    win_rate: 0.5
+  },
+  {
+    matches: 157,
+    wins: 75,
+    draws: 20,
+    losses: 62,
+    goals_for: 579,
+    goals_against: 528,
+    team_id: Long('295'),
+    team_name: 'Apapa Eagles 295',
+    goal_difference: 51,
+    win_rate: 0.478
+  }
+]
+
+====== Cards by team (top 10 by total cards) ======
+[
+  {
+    yellow: 104,
+    red: 25,
+    total: 129,
+    team_id: Long('257'),
+    team_name: 'Ikeja Strikers 257'
+  },
+  {
+    yellow: 110,
+    red: 18,
+    total: 128,
+    team_id: Long('85'),
+    team_name: 'Yaba Warriors 85'
+  },
+  {
+    yellow: 109,
+    red: 17,
+    total: 126,
+    team_id: Long('223'),
+    team_name: 'Island Athletic 223'
+  },
+  {
+    yellow: 108,
+    red: 17,
+    total: 125,
+    team_id: Long('200'),
+    team_name: 'Island Athletic 200'
+  },
+  {
+    yellow: 105,
+    red: 20,
+    total: 125,
+    team_id: Long('327'),
+    team_name: 'Island Lions FC 327'
+  },
+  {
+    yellow: 105,
+    red: 19,
+    total: 124,
+    team_id: Long('119'),
+    team_name: 'Lekki Rovers 119'
+  },
+  {
+    yellow: 105,
+    red: 19,
+    total: 124,
+    team_id: Long('517'),
+    team_name: 'Victoria Athletic 517'
+  },
+  {
+    yellow: 94,
+    red: 28,
+    total: 122,
+    team_id: Long('426'),
+    team_name: 'Festac Strikers 426'
+  },
+  {
+    yellow: 96,
+    red: 23,
+    total: 119,
+    team_id: Long('181'),
+    team_name: 'Lekki Galaxy 181'
+  },
+  {
+    yellow: 107,
+    red: 12,
+    total: 119,
+    team_id: Long('427'),
+    team_name: 'Victoria United 427'
+  }
+]
+
+[4/4] COLLSCAN → IXSCAN demo (same query, before vs after index)…
+Target player_id = 70
+Count of matches in which this player scored (sanity): 38
+(index not present yet - fine)
+
+====== BEFORE — explain('executionStats') ======
+queryPlanner.winningPlan.stage = COLLSCAN
+executionStats.totalDocsExamined = 40000
+executionStats.totalKeysExamined = 0
+executionStats.executionTimeMillis = 54
+executionStats.nReturned = 38
+--- full plan ---
+{
+  namespace: 'kickoff_mongo.match_reports',
+  parsedQuery: {
+    'scorers.player_id': {
+      '$eq': Long('70')
+    }
+  },
+  indexFilterSet: false,
+  queryHash: '326FB822',
+  planCacheShapeHash: '326FB822',
+  planCacheKey: '6FAC8B2A',
+  optimizationTimeMillis: 0,
+  maxIndexedOrSolutionsReached: false,
+  maxIndexedAndSolutionsReached: false,
+  maxScansToExplodeReached: false,
+  prunedSimilarIndexes: false,
+  winningPlan: {
+    isCached: false,
+    stage: 'COLLSCAN',
+    filter: {
+      'scorers.player_id': {
+        '$eq': Long('70')
+      }
+    },
+    direction: 'forward'
+  },
+  rejectedPlans: []
+}
+{
+  executionSuccess: true,
+  nReturned: 38,
+  executionTimeMillis: 54,
+  totalKeysExamined: 0,
+  totalDocsExamined: 40000,
+  executionStages: {
+    isCached: false,
+    stage: 'COLLSCAN',
+    filter: {
+      'scorers.player_id': {
+        '$eq': Long('70')
+      }
+    },
+    nReturned: 38,
+    executionTimeMillisEstimate: 54,
+    works: 40001,
+    advanced: 38,
+    needTime: 39962,
+    needYield: 0,
+    saveState: 3,
+    restoreState: 3,
+    isEOF: 1,
+    direction: 'forward',
+    docsExamined: 40000
+  }
+}
+
+====== Creating multi-key index on scorers.player_id ======
+[
+  {
+    v: 2,
+    key: {
+      _id: 1
+    },
+    name: '_id_'
+  },
+  {
+    v: 2,
+    key: {
+      match_id: 1
+    },
+    name: 'match_id_1',
+    unique: true
+  },
+  {
+    v: 2,
+    key: {
+      date: 1
+    },
+    name: 'date_1'
+  },
+  {
+    v: 2,
+    key: {
+      'home.team_id': 1,
+      date: -1
+    },
+    name: 'home.team_id_1_date_-1'
+  },
+  {
+    v: 2,
+    key: {
+      'away.team_id': 1,
+      date: -1
+    },
+    name: 'away.team_id_1_date_-1'
+  },
+  {
+    v: 2,
+    key: {
+      'scorers.player_id': 1
+    },
+    name: 'scorers.player_id_1'
+  }
+]
+
+====== AFTER — explain('executionStats') ======
+queryPlanner.winningPlan.stage = FETCH
+executionStats.totalDocsExamined = 38
+executionStats.totalKeysExamined = 38
+executionStats.executionTimeMillis = 1
+executionStats.nReturned = 38
+--- full plan ---
+{
+  namespace: 'kickoff_mongo.match_reports',
+  parsedQuery: {
+    'scorers.player_id': {
+      '$eq': Long('70')
+    }
+  },
+  indexFilterSet: false,
+  queryHash: '326FB822',
+  planCacheShapeHash: '326FB822',
+  planCacheKey: '80074D57',
+  optimizationTimeMillis: 0,
+  maxIndexedOrSolutionsReached: false,
+  maxIndexedAndSolutionsReached: false,
+  maxScansToExplodeReached: false,
+  prunedSimilarIndexes: false,
+  winningPlan: {
+    isCached: false,
+    stage: 'FETCH',
+    inputStage: {
+      stage: 'IXSCAN',
+      keyPattern: {
+        'scorers.player_id': 1
+      },
+      indexName: 'scorers.player_id_1',
+      isMultiKey: true,
+      multiKeyPaths: {
+        'scorers.player_id': [
+          'scorers'
+        ]
+      },
+      isUnique: false,
+      isSparse: false,
+      isPartial: false,
+      indexVersion: 2,
+      direction: 'forward',
+      indexBounds: {
+        'scorers.player_id': [
+          '[70, 70]'
+        ]
+      }
+    }
+  },
+  rejectedPlans: []
+}
+{
+  executionSuccess: true,
+  nReturned: 38,
+  executionTimeMillis: 1,
+  totalKeysExamined: 38,
+  totalDocsExamined: 38,
+  executionStages: {
+    isCached: false,
+    stage: 'FETCH',
+    nReturned: 38,
+    executionTimeMillisEstimate: 0,
+    works: 39,
+    advanced: 38,
+    needTime: 0,
+    needYield: 0,
+    saveState: 0,
+    restoreState: 0,
+    isEOF: 1,
+    docsExamined: 38,
+    alreadyHasObj: 0,
+    inputStage: {
+      stage: 'IXSCAN',
+      nReturned: 38,
+      executionTimeMillisEstimate: 0,
+      works: 39,
+      advanced: 38,
+      needTime: 0,
+      needYield: 0,
+      saveState: 0,
+      restoreState: 0,
+      isEOF: 1,
+      keyPattern: {
+        'scorers.player_id': 1
+      },
+      indexName: 'scorers.player_id_1',
+      isMultiKey: true,
+      multiKeyPaths: {
+        'scorers.player_id': [
+          'scorers'
+        ]
+      },
+      isUnique: false,
+      isSparse: false,
+      isPartial: false,
+      indexVersion: 2,
+      direction: 'forward',
+      indexBounds: {
+        'scorers.player_id': [
+          '[70, 70]'
+        ]
+      },
+      keysExamined: 38,
+      seeks: 1,
+      dupsTested: 38,
+      dupsDropped: 0
+    }
+  }
+}
+
+====== BEFORE vs AFTER summary ======
+Stage before: COLLSCAN   Stage after: FETCH -> IXSCAN
+COLLSCAN totalDocsExamined = 40000
+COLLSCAN executionTimeMillis = 54
+IXSCAN  totalKeysExamined  = 38
+IXSCAN  totalDocsExamined   = 38
+IXSCAN  executionTimeMillis = 1
+
+============================================================
+  Raw output captured to:
+    - mongo_schema.out       (validator + sanity insert)
+    - seed_mongo.out         (40k+ insert + 3 sample docs)
+    - aggregations.out       (top scorers + win rates + cards)
+    - collscan_ixscan.out    (COLLSCAN → IXSCAN before/after plan)
+  Screenshot checklist:
+    1) The $jsonSchema validator block from mongo_schema.out
+    2) Document count >= 40 000 from seed_mongo.out
+    3) Three sample documents (different shapes)
+    4) Top-10 scorers table from aggregations.out
+    5) Team win-rate table from aggregations.out
+    6) COLLSCAN explain (totalDocsExamined, executionTimeMillis)
+    7) IXSCAN explain (totalKeysExamined, executionTimeMillis)
+    8) sql_vs_nosql.md filled in with real timings
+============================================================
+  Git commit:
+    git add portfolio-4-nosql
+    git commit -m "P4: MongoDB schema validation, 40k docs, aggregations, COLLSCAN→IXSCAN, SQL vs NoSQL"

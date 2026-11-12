@@ -1,0 +1,344 @@
+Generating 40000 match-report documents in 40 batches…
+  … batch 1/40 — total inserted = 1000
+  … batch 6/40 — total inserted = 6000
+  … batch 11/40 — total inserted = 11000
+  … batch 16/40 — total inserted = 16000
+  … batch 21/40 — total inserted = 21000
+  … batch 26/40 — total inserted = 26000
+  … batch 31/40 — total inserted = 31000
+  … batch 36/40 — total inserted = 36000
+==========================================================
+Done. match_reports.countDocuments() = 40000
+Three sample documents (to show the variable shape):
+{
+  match_id: Long('1'),
+  date: ISODate('2026-01-13T09:53:43.784Z'),
+  pitch_id: Long('7'),
+  location_area: 'Ikeja',
+  home: {
+    team_id: Long('3'),
+    name: 'Lekki Eagles 3',
+    score: 0
+  },
+  away: {
+    team_id: Long('244'),
+    name: 'Agege Rovers 244',
+    score: 7
+  },
+  status: 'completed',
+  created_at: ISODate('2026-11-12T13:58:06.005Z'),
+  scorers: [
+    {
+      player_id: Long('2442'),
+      player_name: 'Uche Ojo',
+      minute: 47,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2441'),
+        player_name: 'Danjuma Okoro'
+      }
+    },
+    {
+      player_id: Long('2447'),
+      player_name: 'Adaeze Oyetola',
+      minute: 57,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2441'),
+        player_name: 'Adaeze Oyetola'
+      }
+    },
+    {
+      player_id: Long('2440'),
+      player_name: 'Maryam Adesanya',
+      minute: 38,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2445'),
+        player_name: 'Uche Ojo'
+      }
+    },
+    {
+      player_id: Long('2445'),
+      player_name: 'Danjuma Okoro',
+      minute: 32,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('2443'),
+      player_name: 'Emeka Abubakar',
+      minute: 18,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2440'),
+        player_name: 'Adaeze Oyetola'
+      }
+    },
+    {
+      player_id: Long('2444'),
+      player_name: 'Zainab Eze',
+      minute: 44,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('2446'),
+      player_name: 'Yemi Adesanya',
+      minute: 62,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('2443'),
+        player_name: 'Yemi Adesanya'
+      }
+    }
+  ],
+  cards: [
+    {
+      player_id: Long('2444'),
+      player_name: 'Zainab Eze',
+      minute: 1,
+      color: 'yellow',
+      team: 'away',
+      reason: 'simulation'
+    },
+    {
+      player_id: Long('2440'),
+      player_name: 'Maryam Adesanya',
+      minute: 14,
+      color: 'yellow',
+      team: 'away',
+      reason: 'simulation'
+    },
+    {
+      player_id: Long('2443'),
+      player_name: 'Emeka Abubakar',
+      minute: 35,
+      color: 'red',
+      team: 'away',
+      reason: 'dissent'
+    }
+  ]
+}
+{
+  match_id: Long('356'),
+  date: ISODate('2026-02-02T09:19:25.347Z'),
+  pitch_id: Long('5'),
+  location_area: 'Yaba',
+  home: {
+    team_id: Long('380'),
+    name: 'Surulere Strikers 380',
+    score: 0
+  },
+  away: {
+    team_id: Long('535'),
+    name: 'Apapa United 535',
+    score: 0
+  },
+  status: 'completed',
+  created_at: ISODate('2026-11-12T13:58:06.042Z'),
+  cards: [
+    {
+      player_id: Long('5355'),
+      player_name: 'Fatima Sanusi',
+      minute: 53,
+      color: 'yellow',
+      team: 'away',
+      reason: 'dissent'
+    },
+    {
+      player_id: Long('5352'),
+      player_name: 'Yemi Bello',
+      minute: 59,
+      color: 'yellow',
+      team: 'away',
+      reason: 'handball'
+    },
+    {
+      player_id: Long('3800'),
+      player_name: 'Chioma Okonkwo',
+      minute: 49,
+      color: 'yellow',
+      team: 'home',
+      reason: 'second bookable offence'
+    },
+    {
+      player_id: Long('3805'),
+      player_name: 'Nike Adeyemi',
+      minute: 82,
+      color: 'yellow',
+      team: 'home',
+      reason: 'second bookable offence'
+    }
+  ],
+  penalty_shootout: {
+    home_score: 5,
+    away_score: 4,
+    takers: [
+      {
+        player_id: Long('3801'),
+        player_name: 'Ifeanyi Mohammed',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5354'),
+        player_name: 'Fatima Sanusi',
+        team: 'away',
+        scored: true
+      },
+      {
+        player_id: Long('3806'),
+        player_name: 'Nike Adeyemi',
+        team: 'home',
+        scored: false
+      },
+      {
+        player_id: Long('5354'),
+        player_name: 'Yemi Bello',
+        team: 'away',
+        scored: false
+      },
+      {
+        player_id: Long('3804'),
+        player_name: 'Nike Idris',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5352'),
+        player_name: 'Maryam Okonkwo',
+        team: 'away',
+        scored: true
+      },
+      {
+        player_id: Long('3807'),
+        player_name: 'Ade Mohammed',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5351'),
+        player_name: 'Chidi Ehigiator',
+        team: 'away',
+        scored: true
+      },
+      {
+        player_id: Long('3802'),
+        player_name: 'Zainab Ibrahim',
+        team: 'home',
+        scored: true
+      },
+      {
+        player_id: Long('5357'),
+        player_name: 'Ifeanyi Ehigiator',
+        team: 'away',
+        scored: false
+      }
+    ]
+  }
+}
+{
+  match_id: Long('19'),
+  date: ISODate('2026-12-24T15:18:41.182Z'),
+  pitch_id: Long('6'),
+  location_area: 'Yaba',
+  home: {
+    team_id: Long('357'),
+    name: 'Yaba Athletic 357',
+    score: 0
+  },
+  away: {
+    team_id: Long('154'),
+    name: 'Surulere Warriors 154',
+    score: 7
+  },
+  status: 'completed',
+  created_at: ISODate('2026-11-12T13:58:06.008Z'),
+  scorers: [
+    {
+      player_id: Long('1545'),
+      player_name: 'Uche Ehigiator',
+      minute: 67,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1540'),
+      player_name: 'Adaeze Abubakar',
+      minute: 81,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1543'),
+      player_name: 'Uche Ojo',
+      minute: 71,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('1540'),
+        player_name: 'Uche Ehigiator'
+      }
+    },
+    {
+      player_id: Long('1547'),
+      player_name: 'Adaeze Ezekwesili',
+      minute: 63,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('1546'),
+        player_name: 'Gbenga Abubakar'
+      }
+    },
+    {
+      player_id: Long('1547'),
+      player_name: 'Adaeze Ezekwesili',
+      minute: 79,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1545'),
+      player_name: 'Uche Ehigiator',
+      minute: 46,
+      team: 'away',
+      is_own_goal: false
+    },
+    {
+      player_id: Long('1544'),
+      player_name: 'Emeka Ehigiator',
+      minute: 15,
+      team: 'away',
+      is_own_goal: false,
+      assist: {
+        player_id: Long('1546'),
+        player_name: 'Adaeze Olawepo'
+      }
+    }
+  ],
+  cards: [
+    {
+      player_id: Long('1541'),
+      player_name: 'Adaeze Olawepo',
+      minute: 33,
+      color: 'yellow',
+      team: 'away',
+      reason: 'serious foul play'
+    }
+  ],
+  var_reviews: [
+    {
+      minute: 55,
+      subject: 'goal: offside check',
+      decision: 'overturned'
+    }
+  ]
+}
+==========================================================
