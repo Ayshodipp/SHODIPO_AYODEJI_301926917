@@ -1,0 +1,72 @@
+SET
+
+====== COMMIT demo: changes are visible after COMMIT ======
+
+DROP TABLE
+CREATE TABLE
+BEGIN
+INSERT 0 1
+INSERT 0 1
+COMMIT
+After COMMIT, rows visible to all sessions:
+ id |      note       |          created_at           
+----+-----------------+-------------------------------
+  1 | committed row 1 | 2026-11-12 14:57:58.754482+01
+  2 | committed row 2 | 2026-11-12 14:57:58.754482+01
+(2 rows)
+
+
+====== ROLLBACK demo: changes discarded after ROLLBACK ======
+
+BEGIN
+INSERT 0 1
+INSERT 0 1
+Inside the transaction, we can see them:
+ rows_inside_txn 
+-----------------
+               4
+(1 row)
+
+ROLLBACK
+After ROLLBACK, the inserted rows are gone:
+ rows_after_rollback 
+---------------------
+                   2
+(1 row)
+
+
+====== SAVEPOINT demo: partial rollback inside a transaction ======
+
+BEGIN
+INSERT 0 1
+SAVEPOINT
+INSERT 0 1
+ROLLBACK
+INSERT 0 1
+COMMIT
+After COMMIT, only the two non-rolled-back rows are visible:
+ id |      note       |          created_at           
+----+-----------------+-------------------------------
+  1 | committed row 1 | 2026-11-12 14:57:58.754482+01
+  2 | committed row 2 | 2026-11-12 14:57:58.754482+01
+  5 | will survive    | 2026-11-12 14:57:58.758255+01
+  7 | also survives   | 2026-11-12 14:57:58.758255+01
+(4 rows)
+
+
+====== TRIGGER-driven rollback: a payment insert that violates a CHECK =====
+       is automatically rolled back when the outer block fails.
+
+DROP TABLE
+CREATE TABLE
+BEGIN
+INSERT 0 1
+ROLLBACK
+After ROLLBACK, the demo table is empty (the 5000 row was undone together with the 0 row):
+ rows_in_p3_payment_demo 
+-------------------------
+                       0
+(1 row)
+
+DROP TABLE
+DROP TABLE

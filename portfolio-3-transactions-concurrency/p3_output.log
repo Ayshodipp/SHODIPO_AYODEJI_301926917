@@ -1,0 +1,181 @@
+============================================================
+  Portfolio 3 — Transactions and Concurrency
+  KickOff Arena · Ayodeji Shodipo · 2026/A/MIT/0725
+============================================================
+[1/3] Installing book_pitch() function + happy-path + failing-path demo…
+SET
+CREATE FUNCTION
+DELETE 0
+DELETE 0
+DELETE 0
+INSERT 0 1
+INSERT 0 14
+INSERT 0 1
+INSERT 0 6
+INSERT 0 6
+
+====== Demo 1: happy path (book_pitch succeeds) ======
+
+psql:book_pitch.sql:175: NOTICE:  table "p3_demo_results" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+           step            | count 
+---------------------------+-------
+ bookings before           | 50000
+ payments before           | 50000
+ bookings after happy-path | 50001
+ payments after happy-path | 50001
+(4 rows)
+
+ booking_id | pitch_id | team_id |       start_time       | duration_hours |  status   | amount  | method | payment_status 
+------------+----------+---------+------------------------+----------------+-----------+---------+--------+----------------
+      50008 |       15 |     603 | 2026-11-19 09:00:00+01 |              1 | confirmed | 9000.00 | card   | succeeded
+(1 row)
+
+psql:
+====== Demo 2: failure path (payment fails → whole transaction rolls back) ======
+
+book_pitch.sql:206: NOTICE:  table "p3_demo_fail" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+psql:book_pitch.sql:237: NOTICE:  Payment failed as expected: new row for relation "payment" violates check constraint "payment_amount_positive_chk"
+DO
+INSERT 0 1
+INSERT 0 1
+          step           | count 
+-------------------------+-------
+ bookings before         | 50001
+ payments before         | 50001
+ bookings after rollback | 50001
+ payments after rollback | 50001
+(4 rows)
+
+
+If the row counts "before" and "after rollback" match, the booking was
+rolled back atomically with the failed payment — no orphaned rows.
+
+[2/3] COMMIT / ROLLBACK / SAVEPOINT demo…
+SET
+
+====== COMMIT demo: changes are visible after COMMIT ======
+
+psql:commit_rollback_demo.sql:13: NOTICE:  table "p3_commit_demo" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+BEGIN
+INSERT 0 1
+INSERT 0 1
+COMMIT
+After COMMIT, rows visible to all sessions:
+ id |      note       |          created_at           
+----+-----------------+-------------------------------
+  1 | committed row 1 | 2026-11-12 14:57:58.754482+01
+  2 | committed row 2 | 2026-11-12 14:57:58.754482+01
+(2 rows)
+
+
+====== ROLLBACK demo: changes discarded after ROLLBACK ======
+
+BEGIN
+INSERT 0 1
+INSERT 0 1
+Inside the transaction, we can see them:
+ rows_inside_txn 
+-----------------
+               4
+(1 row)
+
+ROLLBACK
+After ROLLBACK, the inserted rows are gone:
+ rows_after_rollback 
+---------------------
+                   2
+(1 row)
+
+
+====== SAVEPOINT demo: partial rollback inside a transaction ======
+
+BEGIN
+INSERT 0 1
+SAVEPOINT
+INSERT 0 1
+ROLLBACK
+INSERT 0 1
+COMMIT
+After COMMIT, only the two non-rolled-back rows are visible:
+ id |      note       |          created_at           
+----+-----------------+-------------------------------
+  1 | committed row 1 | 2026-11-12 14:57:58.754482+01
+  2 | committed row 2 | 2026-11-12 14:57:58.754482+01
+  5 | will survive    | 2026-11-12 14:57:58.758255+01
+  7 | also survives   | 2026-11-12 14:57:58.758255+01
+(4 rows)
+
+
+====== TRIGGER-driven rollback: a payment insert that violates a CHECK =====
+       is automatically rolled back when the outer block fails.
+
+psql:commit_rollback_demo.sql:57: NOTICE:  table "p3_payment_demo" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+BEGIN
+INSERT 0 1
+psql:commit_rollback_demo.sql:65: ERROR:  new row for relation "p3_payment_demo" violates check constraint "p3_amount_positive_chk"
+DETAIL:  Failing row contains (2, 0.00).
+ROLLBACK
+After ROLLBACK, the demo table is empty (the 5000 row was undone together with the 0 row):
+ rows_in_p3_payment_demo 
+-------------------------
+                       0
+(1 row)
+
+DROP TABLE
+DROP TABLE
+
+[3/3] Concurrency demos (race bug, exclusion fix, FOR UPDATE, SERIALIZABLE, isolation, deadlock) - two real sessions...
+
+=== PART 1 - THE BUG: check-then-insert with no protection (both sessions want pitch 1, slot 10) ===
+  team A: slot looks free = True
+  team B: slot looks free = True
+  results: {'B': 'inserted', 'A': 'inserted'}
+  rows for the same slot: 2  -> DOUBLE BOOKING (bug reproduced)
+
+=== PART 2 - FIX 1: booking_no_overlap EXCLUDE constraint on the real booking table ===
+  session A: slot looks free = True
+  session B: slot looks free = True
+  results: {'B': 'booking inserted', 'A': 'ExclusionViolation: conflicting key value violates exclusion constraint "booking_no_overlap"'}
+  confirmed bookings for that slot: 1 (must be 1)
+
+=== PART 3 - FIX 2: SELECT ... FOR UPDATE on a lock row, then check, then insert ===
+  team A: got the lock
+  team B: got the lock
+  results: {'A': 'inserted', 'B': "refused (slot already taken - the second session saw the first one's row)"}
+  rows for the slot: 1 (must be 1)
+
+=== PART 4 - FIX 3: SERIALIZABLE isolation (one session is aborted with 'could not serialize') ===
+  results: {'B': 'SerializationFailure: could not serialize access due to read/write dependencies among transactions', 'A': 'committed'}
+  rows for the slot: 1 (must be 1)
+
+=== PART 5 - READ COMMITTED vs REPEATABLE READ (price read twice while another session updates it) ===
+  READ COMMITTED  : first read 9000, other session sets 12000 and commits, second read 12000  -> non-repeatable read
+  REPEATABLE READ : first read 9000, other session sets 12000 and commits, second read 9000  -> repeatable
+
+=== PART 6 - DEADLOCK: two transfers lock accounts in opposite order ===
+  results: {'B': 'ABORTED by PostgreSQL: deadlock detected', 'A': 'committed'}
+  fix = always lock in the same order (lowest id first); balances now: [(1, 99), (2, 101)]
+
+Done. All lines above are real output from this run.
+
+============================================================
+  Evidence saved: book_pitch_output.log, commit_rollback_output.log, race_demos_output.log
+  Screenshot: happy-path booking, rollback counts, each of the 6 race-demo parts.
+============================================================
+  Git commit:
+    git add portfolio-3-transactions-concurrency
+    git commit -m "P3: book_pitch() transaction, race-condition fixes, isolation levels, deadlock"
