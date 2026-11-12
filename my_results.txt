@@ -1,0 +1,205 @@
+MY RESULTS - KickOff Arena - Ayodeji Shodipo - generated Thu Nov 12 13:58:29 UTC 2026
+
+################ P1 row counts + constraint tests ################
+ bookings      | 50000
+ locations     |     4
+ match_results | 17411
+ payments      | 50000
+ pitches       |    12
+ players       |  4000
+ pricing_rows  |   168
+ team_members  |  4503
+ teams         |   600
+====== C1 (control): valid booking 10:00, 1 hour - must SUCCEED ======
+INSERT 0 1
+====== T1: overlapping booking, same pitch 10:00 (EXCLUDE booking_no_overlap) ======
+psql:constraint_tests.sql:32: ERROR:  conflicting key value violates exclusion constraint "booking_no_overlap"
+====== T2: booking not on the hour, 10:30 (CHECK booking_hourly_start_chk) ======
+psql:constraint_tests.sql:37: ERROR:  new row for relation "booking" violates check constraint "booking_hourly_start_chk"
+====== T3: duration 4 hours (CHECK booking_hourly_start_chk) ======
+psql:constraint_tests.sql:42: ERROR:  new row for relation "booking" violates check constraint "booking_hourly_start_chk"
+====== T4: start 02:00, closed hours (CHECK booking_opening_hours_chk) ======
+psql:constraint_tests.sql:47: ERROR:  new row for relation "booking" violates check constraint "booking_opening_hours_chk"
+====== T5: 3-hour booking from 22:00 ends at 01:00 (CHECK booking_opening_hours_chk) ======
+psql:constraint_tests.sql:52: ERROR:  new row for relation "booking" violates check constraint "booking_opening_hours_chk"
+====== T6: team with only 4 players books (TRIGGER trg_check_team_size) ======
+psql:constraint_tests.sql:57: ERROR:  Team 602 has only 4 registered players; at least 5 required to book a pitch.
+====== T7: payment amount = 0 (CHECK payment_amount_positive_chk) ======
+psql:constraint_tests.sql:62: ERROR:  new row for relation "payment" violates check constraint "payment_amount_positive_chk"
+====== T8: negative payment amount (CHECK payment_amount_positive_chk) ======
+psql:constraint_tests.sql:67: ERROR:  new row for relation "payment" violates check constraint "payment_amount_positive_chk"
+====== T9: match_result with home team = away team (CHECK match_result_teams_differ_chk) ======
+psql:constraint_tests.sql:72: ERROR:  new row for relation "match_result" violates check constraint "match_result_teams_differ_chk"
+====== T10: pricing rate <= 0 (CHECK pricing_rate_check) ======
+psql:constraint_tests.sql:77: ERROR:  new row for relation "pricing" violates check constraint "pricing_rate_check"
+====== T11: invalid surface_type (CHECK pitch_surface_chk) ======
+psql:constraint_tests.sql:82: ERROR:  new row for relation "pitch" violates check constraint "pitch_surface_chk"
+
+################ P2 EXPLAIN ANALYZE before vs after indexes (execution times) ################
+--- explain_before.out
+====== Q1 EXPLAIN (before) — free slots at Lekki for tomorrow ======
+ Execution Time: 2.023 ms
+====== Q2 EXPLAIN (before) — revenue per location per month ======
+ Execution Time: 43.543 ms
+====== Q3 EXPLAIN (before) — peak-hour usage ======
+ Execution Time: 7.181 ms
+====== Q4 EXPLAIN (before) — top teams by bookings ======
+ Execution Time: 25.310 ms
+====== Q5 EXPLAIN (before) — no-show rate ======
+ Execution Time: 6.307 ms
+====== Q6 EXPLAIN (before) — pitch utilisation % ======
+ Execution Time: 10.855 ms
+--- explain_after.out
+====== Q1 EXPLAIN (after) — free slots at Lekki for tomorrow ======
+ Execution Time: 0.683 ms
+====== Q2 EXPLAIN (after) — revenue per location per month ======
+ Execution Time: 40.939 ms
+====== Q3 EXPLAIN (after) — peak-hour usage ======
+ Execution Time: 4.118 ms
+====== Q4 EXPLAIN (after) — top teams by bookings ======
+ Execution Time: 19.787 ms
+====== Q5 EXPLAIN (after) — no-show rate ======
+ Execution Time: 7.325 ms
+====== Q6 EXPLAIN (after) — pitch utilisation % ======
+ Execution Time: 2.310 ms
+
+################ P3 transactions + concurrency demos ################
+
+=== PART 1 - THE BUG: check-then-insert with no protection (both sessions want pitch 1, slot 10) ===
+  team A: slot looks free = True
+  team B: slot looks free = True
+  results: {'B': 'inserted', 'A': 'inserted'}
+  rows for the same slot: 2  -> DOUBLE BOOKING (bug reproduced)
+
+=== PART 2 - FIX 1: booking_no_overlap EXCLUDE constraint on the real booking table ===
+  session A: slot looks free = True
+  session B: slot looks free = True
+  results: {'B': 'booking inserted', 'A': 'ExclusionViolation: conflicting key value violates exclusion constraint "booking_no_overlap"'}
+  confirmed bookings for that slot: 1 (must be 1)
+
+=== PART 3 - FIX 2: SELECT ... FOR UPDATE on a lock row, then check, then insert ===
+  team A: got the lock
+  team B: got the lock
+  results: {'A': 'inserted', 'B': "refused (slot already taken - the second session saw the first one's row)"}
+  rows for the slot: 1 (must be 1)
+
+=== PART 4 - FIX 3: SERIALIZABLE isolation (one session is aborted with 'could not serialize') ===
+  results: {'B': 'SerializationFailure: could not serialize access due to read/write dependencies among transactions', 'A': 'committed'}
+  rows for the slot: 1 (must be 1)
+
+=== PART 5 - READ COMMITTED vs REPEATABLE READ (price read twice while another session updates it) ===
+  READ COMMITTED  : first read 9000, other session sets 12000 and commits, second read 12000  -> non-repeatable read
+  REPEATABLE READ : first read 9000, other session sets 12000 and commits, second read 9000  -> repeatable
+
+=== PART 6 - DEADLOCK: two transfers lock accounts in opposite order ===
+  results: {'B': 'ABORTED by PostgreSQL: deadlock detected', 'A': 'committed'}
+  fix = always lock in the same order (lowest id first); balances now: [(1, 99), (2, 101)]
+
+Done. All lines above are real output from this run.
+
+################ P4 MongoDB (documents, COLLSCAN to IXSCAN) ################
+Done. match_reports.countDocuments() = 40000
+Target player_id = 70
+Count of matches in which this player scored (sanity): 38
+====== BEFORE vs AFTER summary ======
+Stage before: COLLSCAN   Stage after: FETCH -> IXSCAN
+COLLSCAN totalDocsExamined = 40000
+COLLSCAN executionTimeMillis = 54
+IXSCAN  totalKeysExamined  = 38
+IXSCAN  totalDocsExamined   = 38
+IXSCAN  executionTimeMillis = 1
+
+============================================================
+
+################ P5 partitioning + replica ################
+====== Partitions and rows per partition (DEFAULT partition must be 0) ======
+ partitions 
+------------
+         29
+(1 row)
+    partition    | rows 
+-----------------+------
+ booking_2025_11 | 1291
+ booking_2025_12 | 2148
+ booking_2026_01 | 2155
+ booking_2026_02 | 1912
+ booking_2026_03 | 2091
+ booking_2026_04 | 2043
+ booking_2026_05 | 2136
+ booking_2026_06 | 2058
+ booking_2026_07 | 2097
+ booking_2026_08 | 2092
+ booking_2026_09 | 2011
+ booking_2026_10 | 2146
+ booking_2026_11 | 2035
+ booking_2026_12 | 2129
+ booking_2027_01 | 2080
+ booking_2027_02 | 1867
+ booking_2027_03 | 2122
+ booking_2027_04 | 2059
+ booking_2027_05 | 2103
+ booking_2027_06 | 2119
+ booking_2027_07 | 2141
+ booking_2027_08 | 2149
+ booking_2027_09 | 2062
+ booking_2027_10 | 2130
+ booking_2027_11 |  826
+(25 rows)
+        check         | count 
+----------------------+-------
+ booking_default rows |     0
+(1 row)
+              check              | partitioned | original 
+---------------------------------+-------------+----------
+ total rows (must equal booking) |       50002 |    50002
+(1 row)
+====== Partition pruning: one month on the PARTITIONED table (touches 1 partition) ======
+                                                                                                        QUERY PLAN                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate (actual time=0.986..0.987 rows=1 loops=1)
+   ->  Append (actual time=0.008..0.897 rows=2035 loops=1)
+         Subplans Removed: 28
+         ->  Seq Scan on booking_2026_11 booking_partitioned_1 (actual time=0.007..0.783 rows=2035 loops=1)
+               Filter: ((start_time >= date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone)) AND (start_time < (date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone) + '1 mon'::interval)))
+ Planning Time: 1.808 ms
+ Execution Time: 1.011 ms
+(7 rows)
+====== Same query on the UNPARTITIONED booking table (for comparison) ======
+                                                                                                     QUERY PLAN                                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate (actual time=18.540..18.540 rows=1 loops=1)
+   ->  Seq Scan on booking (actual time=0.009..18.363 rows=2035 loops=1)
+         Filter: ((start_time >= date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone)) AND (start_time < (date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone) + '1 mon'::interval)))
+         Rows Removed by Filter: 47967
+ Planning Time: 0.074 ms
+ Execution Time: 18.553 ms
+(6 rows)
+====== Control: the per-partition EXCLUDE constraint still blocks a double booking ======
+BEGIN
+INSERT 0 1
+SAVEPOINT
+psql:partitioning.sql:98: ERROR:  conflicting key value violates exclusion constraint "booking_2026_11_no_overlap"
+DETAIL:  Key (pitch_id, time_range)=(1, ["2026-11-15 12:00:00+01","2026-11-15 13:00:00+01")) conflicts with existing key (pitch_id, time_range)=(1, ["2026-11-15 12:00:00+01","2026-11-15 13:00:00+01")).
+ROLLBACK
+ROLLBACK
+=== Setting up the replica (stop old one, base backup, config) ===
+replica started on port 5433
+
+=== 1. Who is who (pg_is_in_recovery: f = primary, t = replica) ===
+primary port 5432 in_recovery = f
+replica port 5433 in_recovery = t
+
+=== 2. Write on the REPLICA must be rejected ===
+ERROR:  cannot execute CREATE TABLE in a read-only transaction
+
+=== 3. Insert on the PRIMARY, then read it on the REPLICA ===
+NOTICE:  table "repl_demo" does not exist, skipping
+row seen on replica: written on primary at 2026-11-12 14:58:24.562601+01
+
+=== 4. Replication lag and sender status ===
+replica replay lag: 00:00:01.476935
+pg_stat_replication: state=streaming, sync_state=async, replay_lag=00:00:00.003235
+replica row count booking = 50002  (primary = 50002)
+
+=== Cleaning up the replica ===
+Replication demo finished.
