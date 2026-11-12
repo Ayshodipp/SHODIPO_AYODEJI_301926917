@@ -1,0 +1,91 @@
+SET
+Pager usage is off.
+psql:partitioning.sql:12: NOTICE:  table "booking_partitioned" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+DO
+CREATE TABLE
+INSERT 0 50002
+ANALYZE
+
+====== Partitions and rows per partition (DEFAULT partition must be 0) ======
+ partitions 
+------------
+         29
+(1 row)
+
+    partition    | rows 
+-----------------+------
+ booking_2025_11 | 1291
+ booking_2025_12 | 2148
+ booking_2026_01 | 2155
+ booking_2026_02 | 1912
+ booking_2026_03 | 2091
+ booking_2026_04 | 2043
+ booking_2026_05 | 2136
+ booking_2026_06 | 2058
+ booking_2026_07 | 2097
+ booking_2026_08 | 2092
+ booking_2026_09 | 2011
+ booking_2026_10 | 2146
+ booking_2026_11 | 2035
+ booking_2026_12 | 2129
+ booking_2027_01 | 2080
+ booking_2027_02 | 1867
+ booking_2027_03 | 2122
+ booking_2027_04 | 2059
+ booking_2027_05 | 2103
+ booking_2027_06 | 2119
+ booking_2027_07 | 2141
+ booking_2027_08 | 2149
+ booking_2027_09 | 2062
+ booking_2027_10 | 2130
+ booking_2027_11 |  826
+(25 rows)
+
+        check         | count 
+----------------------+-------
+ booking_default rows |     0
+(1 row)
+
+              check              | partitioned | original 
+---------------------------------+-------------+----------
+ total rows (must equal booking) |       50002 |    50002
+(1 row)
+
+
+====== Partition pruning: one month on the PARTITIONED table (touches 1 partition) ======
+                                                                                                        QUERY PLAN                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate (actual time=0.986..0.987 rows=1 loops=1)
+   ->  Append (actual time=0.008..0.897 rows=2035 loops=1)
+         Subplans Removed: 28
+         ->  Seq Scan on booking_2026_11 booking_partitioned_1 (actual time=0.007..0.783 rows=2035 loops=1)
+               Filter: ((start_time >= date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone)) AND (start_time < (date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone) + '1 mon'::interval)))
+ Planning Time: 1.808 ms
+ Execution Time: 1.011 ms
+(7 rows)
+
+
+====== Same query on the UNPARTITIONED booking table (for comparison) ======
+                                                                                                     QUERY PLAN                                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate (actual time=18.540..18.540 rows=1 loops=1)
+   ->  Seq Scan on booking (actual time=0.009..18.363 rows=2035 loops=1)
+         Filter: ((start_time >= date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone)) AND (start_time < (date_trunc('month'::text, (CURRENT_DATE)::timestamp with time zone) + '1 mon'::interval)))
+         Rows Removed by Filter: 47967
+ Planning Time: 0.074 ms
+ Execution Time: 18.553 ms
+(6 rows)
+
+
+====== Control: the per-partition EXCLUDE constraint still blocks a double booking ======
+BEGIN
+INSERT 0 1
+SAVEPOINT
+psql:partitioning.sql:98: ERROR:  conflicting key value violates exclusion constraint "booking_2026_11_no_overlap"
+DETAIL:  Key (pitch_id, time_range)=(1, ["2026-11-15 12:00:00+01","2026-11-15 13:00:00+01")) conflicts with existing key (pitch_id, time_range)=(1, ["2026-11-15 12:00:00+01","2026-11-15 13:00:00+01")).
+ROLLBACK
+ROLLBACK

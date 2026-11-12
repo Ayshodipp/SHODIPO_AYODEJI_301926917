@@ -1,0 +1,21 @@
+=== Setting up the replica (stop old one, base backup, config) ===
+replica started on port 5433
+
+=== 1. Who is who (pg_is_in_recovery: f = primary, t = replica) ===
+primary port 5432 in_recovery = f
+replica port 5433 in_recovery = t
+
+=== 2. Write on the REPLICA must be rejected ===
+ERROR:  cannot execute CREATE TABLE in a read-only transaction
+
+=== 3. Insert on the PRIMARY, then read it on the REPLICA ===
+NOTICE:  table "repl_demo" does not exist, skipping
+row seen on replica: written on primary at 2026-11-12 14:58:24.562601+01
+
+=== 4. Replication lag and sender status ===
+replica replay lag: 00:00:01.476935
+pg_stat_replication: state=streaming, sync_state=async, replay_lag=00:00:00.003235
+replica row count booking = 50002  (primary = 50002)
+
+=== Cleaning up the replica ===
+Replication demo finished.
