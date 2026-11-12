@@ -1,0 +1,292 @@
+SET
+Pager usage is off.
+====== Q1 EXPLAIN (before) — free slots at Lekki for tomorrow ======
+                                                                                                                  QUERY PLAN                                                                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=3668.61..3668.71 rows=42 width=50) (actual time=1.924..1.930 rows=20 loops=1)
+   Output: a.pitch_name, ((lpad((a.start_hour)::text, 2, '0'::text) || ':00'::text)), a.start_hour
+   Sort Key: a.pitch_name, a.start_hour
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=331
+   ->  Hash Right Anti Join  (cost=1544.05..3667.48 rows=42 width=50) (actual time=1.885..1.896 rows=20 loops=1)
+         Output: a.pitch_name, (lpad((a.start_hour)::text, 2, '0'::text) || ':00'::text), a.start_hour
+         Hash Cond: ((b.pitch_id = a.pitch_id) AND (h.hour_slot = a.start_hour))
+         Buffers: shared hit=325
+         ->  Nested Loop  (cost=1540.34..3142.40 rows=69000 width=12) (actual time=1.588..1.802 rows=115 loops=1)
+               Output: b.pitch_id, h.hour_slot
+               Buffers: shared hit=323
+               ->  Bitmap Heap Scan on public.booking b  (cost=1540.32..1762.37 rows=69 width=20) (actual time=1.568..1.692 rows=63 loops=1)
+                     Output: b.booking_id, b.pitch_id, b.team_id, b.start_time, b.duration_hours, b.time_range, b.status, b.created_at
+                     Recheck Cond: ((b.start_time >= ((CURRENT_DATE + 1))::timestamp with time zone) AND (b.start_time < ((CURRENT_DATE + 2))::timestamp with time zone))
+                     Filter: (b.status = ANY ('{confirmed,completed}'::text[]))
+                     Rows Removed by Filter: 5
+                     Heap Blocks: exact=64
+                     Buffers: shared hit=323
+                     ->  Bitmap Index Scan on booking_pitch_start_idx  (cost=0.00..1540.31 rows=77 width=0) (actual time=1.524..1.524 rows=68 loops=1)
+                           Index Cond: ((b.start_time >= ((CURRENT_DATE + 1))::timestamp with time zone) AND (b.start_time < ((CURRENT_DATE + 2))::timestamp with time zone))
+                           Buffers: shared hit=259
+               ->  Function Scan on pg_catalog.generate_series h  (cost=0.02..10.02 rows=1000 width=4) (actual time=0.001..0.001 rows=2 loops=63)
+                     Output: h.hour_slot
+                     Function Call: generate_series((EXTRACT(hour FROM (b.start_time AT TIME ZONE 'Africa/Lagos'::text)))::integer, (((EXTRACT(hour FROM (b.start_time AT TIME ZONE 'Africa/Lagos'::text)))::integer + b.duration_hours) - 1))
+         ->  Hash  (cost=2.99..2.99 rows=48 width=26) (actual time=0.049..0.052 rows=48 loops=1)
+               Output: a.pitch_name, a.start_hour, a.pitch_id
+               Buckets: 1024  Batches: 1  Memory Usage: 11kB
+               Buffers: shared hit=2
+               ->  Subquery Scan on a  (cost=1.06..2.99 rows=48 width=26) (actual time=0.027..0.040 rows=48 loops=1)
+                     Output: a.pitch_name, a.start_hour, a.pitch_id
+                     Buffers: shared hit=2
+                     ->  ProjectSet  (cost=1.06..2.51 rows=48 width=26) (actual time=0.026..0.034 rows=48 loops=1)
+                           Output: p.pitch_id, p.name, generate_series(7, 22)
+                           Buffers: shared hit=2
+                           ->  Hash Join  (cost=1.06..2.25 rows=3 width=22) (actual time=0.023..0.027 rows=3 loops=1)
+                                 Output: p.pitch_id, p.name
+                                 Inner Unique: true
+                                 Hash Cond: (p.location_id = l.location_id)
+                                 Buffers: shared hit=2
+                                 ->  Seq Scan on public.pitch p  (cost=0.00..1.12 rows=12 width=30) (actual time=0.003..0.004 rows=12 loops=1)
+                                       Output: p.pitch_id, p.location_id, p.name, p.surface_type, p.capacity, p.active
+                                       Buffers: shared hit=1
+                                 ->  Hash  (cost=1.05..1.05 rows=1 width=8) (actual time=0.008..0.008 rows=1 loops=1)
+                                       Output: l.location_id
+                                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                       Buffers: shared hit=1
+                                       ->  Seq Scan on public.location l  (cost=0.00..1.05 rows=1 width=8) (actual time=0.003..0.004 rows=1 loops=1)
+                                             Output: l.location_id
+                                             Filter: (l.area = 'Lekki'::text)
+                                             Rows Removed by Filter: 3
+                                             Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=441
+ Planning Time: 1.111 ms
+ Execution Time: 2.023 ms
+(56 rows)
+
+
+====== Q2 EXPLAIN (before) — revenue per location per month ======
+                                                                             QUERY PLAN                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=6293.90..6358.27 rows=25748 width=86) (actual time=42.985..42.995 rows=56 loops=1)
+   Output: l.area, (to_char((date_trunc('month'::text, p.paid_at)), 'YYYY-MM'::text)), (sum(p.amount)), (count(*)), (date_trunc('month'::text, p.paid_at))
+   Sort Key: l.area, (to_char((date_trunc('month'::text, p.paid_at)), 'YYYY-MM'::text))
+   Sort Method: quicksort  Memory: 28kB
+   Buffers: shared hit=1233
+   ->  HashAggregate  (cost=3892.62..4407.58 rows=25748 width=86) (actual time=42.773..42.935 rows=56 loops=1)
+         Output: l.area, to_char((date_trunc('month'::text, p.paid_at)), 'YYYY-MM'::text), sum(p.amount), count(*), (date_trunc('month'::text, p.paid_at))
+         Group Key: l.area, date_trunc('month'::text, p.paid_at)
+         Batches: 1  Memory Usage: 817kB
+         Buffers: shared hit=1233
+         ->  Hash Join  (cost=2220.39..3635.14 rows=25748 width=28) (actual time=14.521..37.051 rows=25752 loops=1)
+               Output: l.area, date_trunc('month'::text, p.paid_at), p.paid_at, p.amount
+               Inner Unique: true
+               Hash Cond: (pi.location_id = l.location_id)
+               Buffers: shared hit=1233
+               ->  Hash Join  (cost=2219.30..3430.48 rows=25748 width=22) (actual time=14.504..28.715 rows=25752 loops=1)
+                     Output: p.paid_at, p.amount, pi.location_id
+                     Inner Unique: true
+                     Hash Cond: (b.pitch_id = pi.pitch_id)
+                     Buffers: shared hit=1232
+                     ->  Hash Join  (cost=2218.03..3337.75 rows=25748 width=22) (actual time=14.489..25.190 rows=25752 loops=1)
+                           Output: p.paid_at, p.amount, b.pitch_id
+                           Inner Unique: true
+                           Hash Cond: (p.booking_id = b.booking_id)
+                           Buffers: shared hit=1231
+                           ->  Bitmap Heap Scan on public.payment p  (cost=426.03..1478.15 rows=25748 width=22) (actual time=1.386..6.367 rows=25752 loops=1)
+                                 Output: p.payment_id, p.booking_id, p.amount, p.currency, p.method, p.status, p.paid_at
+                                 Recheck Cond: (p.paid_at >= (now() - '30 days'::interval))
+                                 Filter: (p.status = 'succeeded'::text)
+                                 Rows Removed by Filter: 1346
+                                 Heap Blocks: exact=510
+                                 Buffers: shared hit=564
+                                 ->  Bitmap Index Scan on payment_paid_at_idx  (cost=0.00..419.59 rows=27106 width=0) (actual time=1.298..1.299 rows=27098 loops=1)
+                                       Index Cond: (p.paid_at >= (now() - '30 days'::interval))
+                                       Buffers: shared hit=54
+                           ->  Hash  (cost=1167.00..1167.00 rows=50000 width=16) (actual time=12.792..12.793 rows=50000 loops=1)
+                                 Output: b.booking_id, b.pitch_id
+                                 Buckets: 65536  Batches: 1  Memory Usage: 2856kB
+                                 Buffers: shared hit=667
+                                 ->  Seq Scan on public.booking b  (cost=0.00..1167.00 rows=50000 width=16) (actual time=0.008..5.156 rows=50000 loops=1)
+                                       Output: b.booking_id, b.pitch_id
+                                       Buffers: shared hit=667
+                     ->  Hash  (cost=1.12..1.12 rows=12 width=16) (actual time=0.006..0.007 rows=12 loops=1)
+                           Output: pi.pitch_id, pi.location_id
+                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                           Buffers: shared hit=1
+                           ->  Seq Scan on public.pitch pi  (cost=0.00..1.12 rows=12 width=16) (actual time=0.002..0.003 rows=12 loops=1)
+                                 Output: pi.pitch_id, pi.location_id
+                                 Buffers: shared hit=1
+               ->  Hash  (cost=1.04..1.04 rows=4 width=14) (actual time=0.010..0.010 rows=4 loops=1)
+                     Output: l.area, l.location_id
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     Buffers: shared hit=1
+                     ->  Seq Scan on public.location l  (cost=0.00..1.04 rows=4 width=14) (actual time=0.005..0.006 rows=4 loops=1)
+                           Output: l.area, l.location_id
+                           Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=101
+ Planning Time: 0.946 ms
+ Execution Time: 43.543 ms
+(60 rows)
+
+
+====== Q3 EXPLAIN (before) — peak-hour usage ======
+                                                                                                                      QUERY PLAN                                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=2406.72..2406.73 rows=4 width=22) (actual time=7.114..7.117 rows=4 loops=1)
+   Output: l.area, (count(*)), (sum(b.duration_hours))
+   Sort Key: (sum(b.duration_hours)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=1835
+   ->  HashAggregate  (cost=2406.64..2406.68 rows=4 width=22) (actual time=7.093..7.097 rows=4 loops=1)
+         Output: l.area, count(*), sum(b.duration_hours)
+         Group Key: l.area
+         Batches: 1  Memory Usage: 24kB
+         Buffers: shared hit=1832
+         ->  Nested Loop  (cost=6.59..2399.66 rows=931 width=10) (actual time=0.069..6.841 rows=1022 loops=1)
+               Output: l.area, b.duration_hours
+               Buffers: shared hit=1832
+               ->  Nested Loop  (cost=0.14..13.98 rows=12 width=14) (actual time=0.011..0.044 rows=12 loops=1)
+                     Output: pi.pitch_id, l.area
+                     Inner Unique: true
+                     Join Filter: (pi.location_id = l.location_id)
+                     Rows Removed by Join Filter: 18
+                     Buffers: shared hit=3
+                     ->  Index Scan using pitch_pkey on public.pitch pi  (cost=0.14..12.31 rows=12 width=16) (actual time=0.002..0.013 rows=12 loops=1)
+                           Output: pi.pitch_id, pi.location_id, pi.name, pi.surface_type, pi.capacity, pi.active
+                           Buffers: shared hit=2
+                     ->  Materialize  (cost=0.00..1.06 rows=4 width=14) (actual time=0.001..0.001 rows=2 loops=12)
+                           Output: l.area, l.location_id
+                           Buffers: shared hit=1
+                           ->  Seq Scan on public.location l  (cost=0.00..1.04 rows=4 width=14) (actual time=0.004..0.007 rows=4 loops=1)
+                                 Output: l.area, l.location_id
+                                 Buffers: shared hit=1
+               ->  Bitmap Heap Scan on public.booking b  (cost=6.45..198.03 rows=78 width=12) (actual time=0.046..0.553 rows=85 loops=12)
+                     Output: b.booking_id, b.pitch_id, b.team_id, b.start_time, b.duration_hours, b.time_range, b.status, b.created_at
+                     Recheck Cond: ((pi.pitch_id = b.pitch_id) AND (b.start_time >= (now() - '30 days'::interval)) AND (b.start_time < now()))
+                     Filter: ((b.status = ANY ('{confirmed,completed}'::text[])) AND ((EXTRACT(dow FROM (b.start_time AT TIME ZONE 'Africa/Lagos'::text)) = ANY ('{0,6}'::numeric[])) OR (SubPlan 1)))
+                     Rows Removed by Filter: 86
+                     Heap Blocks: exact=1795
+                     Buffers: shared hit=1829
+                     ->  Bitmap Index Scan on booking_pitch_start_idx  (cost=0.00..6.44 rows=171 width=0) (actual time=0.021..0.021 rows=171 loops=12)
+                           Index Cond: ((b.pitch_id = pi.pitch_id) AND (b.start_time >= (now() - '30 days'::interval)) AND (b.start_time < now()))
+                           Buffers: shared hit=34
+                     SubPlan 1
+                       ->  Function Scan on pg_catalog.generate_series h  (cost=0.02..12.52 rows=333 width=0) (actual time=0.002..0.002 rows=0 loops=1340)
+                             Function Call: generate_series((EXTRACT(hour FROM (b.start_time AT TIME ZONE 'Africa/Lagos'::text)))::integer, (((EXTRACT(hour FROM (b.start_time AT TIME ZONE 'Africa/Lagos'::text)))::integer + b.duration_hours) - 1))
+                             Filter: (h.hour_slot >= 17)
+                             Rows Removed by Filter: 1
+ Planning:
+   Buffers: shared hit=69
+ Planning Time: 0.561 ms
+ Execution Time: 7.181 ms
+(47 rows)
+
+
+====== Q4 EXPLAIN (before) — top teams by bookings ======
+                                                                  QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=1715.64..1715.66 rows=10 width=41) (actual time=25.269..25.273 rows=10 loops=1)
+   Output: t.team_id, t.name, (count(b.booking_id)), (sum(b.duration_hours))
+   Buffers: shared hit=676
+   ->  Sort  (cost=1715.64..1717.14 rows=600 width=41) (actual time=25.268..25.270 rows=10 loops=1)
+         Output: t.team_id, t.name, (count(b.booking_id)), (sum(b.duration_hours))
+         Sort Key: (count(b.booking_id)) DESC NULLS LAST, (sum(b.duration_hours)) DESC NULLS LAST
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=676
+         ->  HashAggregate  (cost=1696.67..1702.67 rows=600 width=41) (actual time=25.135..25.192 rows=600 loops=1)
+               Output: t.team_id, t.name, count(b.booking_id), sum(b.duration_hours)
+               Group Key: t.team_id
+               Batches: 1  Memory Usage: 169kB
+               Buffers: shared hit=676
+               ->  Hash Right Join  (cost=22.50..1321.67 rows=50000 width=37) (actual time=0.232..15.847 rows=50000 loops=1)
+                     Output: t.team_id, t.name, b.booking_id, b.duration_hours
+                     Inner Unique: true
+                     Hash Cond: (b.team_id = t.team_id)
+                     Buffers: shared hit=676
+                     ->  Seq Scan on public.booking b  (cost=0.00..1167.00 rows=50000 width=20) (actual time=0.003..4.348 rows=50000 loops=1)
+                           Output: b.booking_id, b.pitch_id, b.team_id, b.start_time, b.duration_hours, b.time_range, b.status, b.created_at
+                           Buffers: shared hit=667
+                     ->  Hash  (cost=15.00..15.00 rows=600 width=25) (actual time=0.223..0.224 rows=600 loops=1)
+                           Output: t.team_id, t.name
+                           Buckets: 1024  Batches: 1  Memory Usage: 42kB
+                           Buffers: shared hit=9
+                           ->  Seq Scan on public.team t  (cost=0.00..15.00 rows=600 width=25) (actual time=0.006..0.092 rows=600 loops=1)
+                                 Output: t.team_id, t.name
+                                 Buffers: shared hit=9
+ Planning:
+   Buffers: shared hit=56
+ Planning Time: 0.374 ms
+ Execution Time: 25.310 ms
+(32 rows)
+
+
+====== Q5 EXPLAIN (before) — no-show rate ======
+                                                                                                     QUERY PLAN                                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1605.30..1605.32 rows=1 width=48) (actual time=6.285..6.286 rows=1 loops=1)
+   Output: count(*), sum(CASE WHEN (b.status = 'no_show'::text) THEN 1 ELSE 0 END), round(((100.0 * (sum(CASE WHEN (b.status = 'no_show'::text) THEN 1 ELSE 0 END))::numeric) / (NULLIF(count(*), 0))::numeric), 2)
+   Buffers: shared hit=667
+   ->  Seq Scan on public.booking b  (cost=0.00..1417.00 rows=25106 width=9) (actual time=0.006..4.259 rows=24950 loops=1)
+         Output: b.booking_id, b.pitch_id, b.team_id, b.start_time, b.duration_hours, b.time_range, b.status, b.created_at
+         Filter: (b.start_time < now())
+         Rows Removed by Filter: 25050
+         Buffers: shared hit=667
+ Planning Time: 0.124 ms
+ Execution Time: 6.307 ms
+(10 rows)
+
+
+====== Q6 EXPLAIN (before) — pitch utilisation % ======
+                                                                                                                     QUERY PLAN                                                                                                                      
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=1993.24..1993.27 rows=12 width=86) (actual time=10.784..10.787 rows=12 loops=1)
+   Output: pi.name, ((EXTRACT(epoch FROM (w.to_ts - w.from_ts)) / 3600.0)), (COALESCE(b.booked_hours, '0'::bigint)), (round(((100.0 * (COALESCE(b.booked_hours, '0'::bigint))::numeric) / (EXTRACT(epoch FROM (w.to_ts - w.from_ts)) / 3600.0)), 2))
+   Sort Key: (round(((100.0 * (COALESCE(b.booked_hours, '0'::bigint))::numeric) / (EXTRACT(epoch FROM (w.to_ts - w.from_ts)) / 3600.0)), 2)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=671
+   CTE win
+     ->  Result  (cost=0.00..0.02 rows=1 width=16) (actual time=0.005..0.005 rows=1 loops=1)
+           Output: (now() - '30 days'::interval), now()
+   ->  Nested Loop  (cost=1991.40..1993.00 rows=12 width=86) (actual time=10.737..10.751 rows=12 loops=1)
+         Output: pi.name, (EXTRACT(epoch FROM (w.to_ts - w.from_ts)) / 3600.0), COALESCE(b.booked_hours, '0'::bigint), round(((100.0 * (COALESCE(b.booked_hours, '0'::bigint))::numeric) / (EXTRACT(epoch FROM (w.to_ts - w.from_ts)) / 3600.0)), 2)
+         Buffers: shared hit=668
+         ->  CTE Scan on win w  (cost=0.00..0.02 rows=1 width=16) (actual time=0.006..0.007 rows=1 loops=1)
+               Output: w.from_ts, w.to_ts
+         ->  Hash Left Join  (cost=1991.40..1992.56 rows=12 width=22) (actual time=10.721..10.726 rows=12 loops=1)
+               Output: pi.name, b.booked_hours
+               Inner Unique: true
+               Hash Cond: (pi.pitch_id = b.pitch_id)
+               Buffers: shared hit=668
+               ->  Seq Scan on public.pitch pi  (cost=0.00..1.12 rows=12 width=22) (actual time=0.006..0.008 rows=12 loops=1)
+                     Output: pi.pitch_id, pi.location_id, pi.name, pi.surface_type, pi.capacity, pi.active
+                     Filter: pi.active
+                     Buffers: shared hit=1
+               ->  Hash  (cost=1991.25..1991.25 rows=12 width=16) (actual time=10.708..10.710 rows=12 loops=1)
+                     Output: b.booked_hours, b.pitch_id
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     Buffers: shared hit=667
+                     ->  Subquery Scan on b  (cost=1991.01..1991.25 rows=12 width=16) (actual time=10.699..10.703 rows=12 loops=1)
+                           Output: b.booked_hours, b.pitch_id
+                           Buffers: shared hit=667
+                           ->  HashAggregate  (cost=1991.01..1991.13 rows=12 width=16) (actual time=10.699..10.701 rows=12 loops=1)
+                                 Output: b_1.pitch_id, sum(b_1.duration_hours)
+                                 Group Key: b_1.pitch_id
+                                 Batches: 1  Memory Usage: 24kB
+                                 Buffers: shared hit=667
+                                 ->  Nested Loop  (cost=0.00..1966.05 rows=4993 width=12) (actual time=0.027..10.427 rows=1828 loops=1)
+                                       Output: b_1.pitch_id, b_1.duration_hours
+                                       Join Filter: ((b_1.start_time >= w_1.from_ts) AND (b_1.start_time < w_1.to_ts))
+                                       Rows Removed by Join Filter: 43216
+                                       Buffers: shared hit=667
+                                       ->  CTE Scan on win w_1  (cost=0.00..0.02 rows=1 width=16) (actual time=0.000..0.002 rows=1 loops=1)
+                                             Output: w_1.from_ts, w_1.to_ts
+                                       ->  Seq Scan on public.booking b_1  (cost=0.00..1292.00 rows=44935 width=20) (actual time=0.006..7.561 rows=45044 loops=1)
+                                             Output: b_1.booking_id, b_1.pitch_id, b_1.team_id, b_1.start_time, b_1.duration_hours, b_1.time_range, b_1.status, b_1.created_at
+                                             Filter: (b_1.status = ANY ('{confirmed,completed}'::text[]))
+                                             Rows Removed by Filter: 4956
+                                             Buffers: shared hit=667
+ Planning:
+   Buffers: shared hit=11
+ Planning Time: 0.380 ms
+ Execution Time: 10.855 ms
+(50 rows)
+

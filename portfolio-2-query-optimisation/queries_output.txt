@@ -1,0 +1,149 @@
+SET
+
+====== Q1: Free slots at a location for a given date ======
+      (location = Lekki, date = tomorrow by default)
+
+  pitch_name   | free_slot 
+---------------+-----------
+ Lekki Pitch A | 07:00
+ Lekki Pitch A | 20:00
+ Lekki Pitch A | 21:00
+ Lekki Pitch A | 22:00
+ Lekki Pitch B | 07:00
+ Lekki Pitch B | 09:00
+ Lekki Pitch B | 10:00
+ Lekki Pitch B | 13:00
+ Lekki Pitch B | 14:00
+ Lekki Pitch B | 15:00
+ Lekki Pitch B | 16:00
+ Lekki Pitch B | 19:00
+ Lekki Pitch B | 22:00
+ Lekki Pitch C | 11:00
+ Lekki Pitch C | 15:00
+ Lekki Pitch C | 16:00
+ Lekki Pitch C | 18:00
+ Lekki Pitch C | 19:00
+ Lekki Pitch C | 20:00
+ Lekki Pitch C | 22:00
+(20 rows)
+
+
+====== Q2: Revenue per location per month (last 12 months) ======
+
+ location |  month  | revenue_ngn | payment_count 
+----------+---------+-------------+---------------
+ Ikeja    | 2026-10 |  8479000.00 |           319
+ Ikeja    | 2026-11 | 13477000.00 |           473
+ Ikeja    | 2026-12 | 13815000.00 |           500
+ Ikeja    | 2027-01 | 14026000.00 |           488
+ Ikeja    | 2027-02 | 12380000.00 |           439
+ Ikeja    | 2027-03 | 13596000.00 |           489
+ Ikeja    | 2027-04 | 13451000.00 |           483
+ Ikeja    | 2027-05 | 13994000.00 |           489
+ Ikeja    | 2027-06 | 13782000.00 |           489
+ Ikeja    | 2027-07 | 13819000.00 |           490
+ Ikeja    | 2027-08 | 14812000.00 |           510
+ Ikeja    | 2027-09 | 12655000.00 |           472
+ Ikeja    | 2027-10 | 14853000.00 |           497
+ Ikeja    | 2027-11 |  5191000.00 |           202
+ Lekki    | 2026-10 |  8839000.00 |           299
+ Lekki    | 2026-11 | 13634000.00 |           489
+ Lekki    | 2026-12 | 14647000.00 |           523
+ Lekki    | 2027-01 | 14624000.00 |           501
+ Lekki    | 2027-02 | 12446000.00 |           456
+ Lekki    | 2027-03 | 14448000.00 |           520
+ Lekki    | 2027-04 | 13973000.00 |           504
+ Lekki    | 2027-05 | 14056000.00 |           492
+ Lekki    | 2027-06 | 13751000.00 |           508
+ Lekki    | 2027-07 | 14808000.00 |           508
+ Lekki    | 2027-08 | 13876000.00 |           501
+ Lekki    | 2027-09 | 13251000.00 |           482
+ Lekki    | 2027-10 | 14536000.00 |           499
+ Lekki    | 2027-11 |  5168000.00 |           199
+ Surulere | 2026-10 |  8274000.00 |           298
+ Surulere | 2026-11 | 14364000.00 |           491
+ Surulere | 2026-12 | 13474000.00 |           492
+ Surulere | 2027-01 | 15159000.00 |           512
+ Surulere | 2027-02 | 12206000.00 |           426
+ Surulere | 2027-03 | 13688000.00 |           505
+ Surulere | 2027-04 | 13539000.00 |           498
+ Surulere | 2027-05 | 14228000.00 |           497
+ Surulere | 2027-06 | 13983000.00 |           498
+ Surulere | 2027-07 | 15095000.00 |           511
+ Surulere | 2027-08 | 14279000.00 |           524
+ Surulere | 2027-09 | 13633000.00 |           497
+ Surulere | 2027-10 | 14777000.00 |           514
+ Surulere | 2027-11 |  5210000.00 |           194
+ Yaba     | 2026-10 |  8163000.00 |           286
+ Yaba     | 2026-11 | 14027000.00 |           476
+ Yaba     | 2026-12 | 13941000.00 |           513
+ Yaba     | 2027-01 | 14068000.00 |           492
+ Yaba     | 2027-02 | 13288000.00 |           452
+ Yaba     | 2027-03 | 13883000.00 |           503
+ Yaba     | 2027-04 | 13586000.00 |           485
+ Yaba     | 2027-05 | 14772000.00 |           516
+ Yaba     | 2027-06 | 13834000.00 |           517
+ Yaba     | 2027-07 | 14917000.00 |           527
+ Yaba     | 2027-08 | 14121000.00 |           513
+ Yaba     | 2027-09 | 13787000.00 |           498
+ Yaba     | 2027-10 | 14459000.00 |           507
+ Yaba     | 2027-11 |  4728000.00 |           189
+(56 rows)
+
+
+====== Q3: Peak-hour usage (peak = 17:00–23:00 weekdays OR all day weekends) ======
+
+ location | peak_bookings | peak_hours_booked 
+----------+---------------+-------------------
+ Lekki    |           264 |               467
+ Surulere |           256 |               464
+ Yaba     |           249 |               455
+ Ikeja    |           253 |               434
+(4 rows)
+
+
+====== Q4: Top 10 teams by number of bookings ======
+
+ team_id |       team_name       | bookings | hours_booked 
+---------+-----------------------+----------+--------------
+     286 | Mainland Athletic 286 |      112 |          211
+      38 | Agege Eagles 38       |      109 |          189
+     163 | Island Galaxy 163     |      109 |          188
+     502 | Lekki Strikers 502    |      109 |          184
+     420 | Surulere Lions FC 420 |      108 |          199
+     249 | Yaba Lions FC 249     |      108 |          192
+      74 | Island Eagles 74      |      107 |          196
+     581 | Lekki Athletic 581    |      107 |          181
+      54 | Island City 54        |      106 |          205
+     555 | Apapa Athletic 555    |      106 |          205
+(10 rows)
+
+
+====== Q5: No-show rate (bookings whose start is in the past ======
+           and have no match_result, divided by total past bookings)
+
+ past_bookings | marked_no_show | no_show_rate_pct 
+---------------+----------------+------------------
+         24950 |           1206 |             4.83
+(1 row)
+
+
+====== Q6: Pitch utilisation % (booked hours / available hours) ======
+           over the last 30 days, per pitch
+
+    pitch_name    |   available_hours    | booked_hours | utilisation_pct 
+------------------+----------------------+--------------+-----------------
+ Lekki Pitch C    | 720.0000000000000000 |          289 |           40.14
+ Ikeja Pitch A    | 720.0000000000000000 |          285 |           39.58
+ Surulere Pitch A | 720.0000000000000000 |          285 |           39.58
+ Yaba Pitch A     | 720.0000000000000000 |          278 |           38.61
+ Ikeja Pitch B    | 720.0000000000000000 |          278 |           38.61
+ Surulere Pitch C | 720.0000000000000000 |          274 |           38.06
+ Lekki Pitch A    | 720.0000000000000000 |          265 |           36.81
+ Lekki Pitch B    | 720.0000000000000000 |          262 |           36.39
+ Yaba Pitch B     | 720.0000000000000000 |          261 |           36.25
+ Yaba Pitch C     | 720.0000000000000000 |          260 |           36.11
+ Surulere Pitch B | 720.0000000000000000 |          258 |           35.83
+ Ikeja Pitch C    | 720.0000000000000000 |          245 |           34.03
+(12 rows)
+
